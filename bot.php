@@ -27,6 +27,11 @@ $channel_id = "-100xxxxxxxxxx";
 	  \n/bin <bin> (Bin Data)
           \n/weather <name of your city> (Current weather Status)
           \n/dice (random 1-6)
+	  \n/toss (Random Heads or Tails)
+	  \n/btcrate (Current BTC Rate)
+	  \n/ethrate (Current ETH Rate)
+	  \n/inbtc <USD> (Convert USD to BTC)
+
           \n/date (today's date)
           \n/time (current time)
           \n/git <username>
@@ -70,7 +75,121 @@ if (strpos($message, "/search") === 0) {
     }
   }
 
+//Toss
+if($message == "/toss"){
+      $toss =array("Heads","Tails","Heads","Tails","Heads");
+    $random_toss=array_rand($toss,4);
+    $tossed = $toss[$random_toss[0]];
+        send_message($chat_id,$message_id, "$tossed \nTossed By: @$username");
+    }
 
+/// Conversion - USD => BTC
+
+if(strpos($message, "/inbtc") === 0){
+$inbtc = substr($message, 7);
+   $curl = curl_init();
+   curl_setopt_array($curl, [
+CURLOPT_URL => "https://blockchain.info/tobtc?currency=USD&value=$inbtc",
+	CURLOPT_RETURNTRANSFER => true,
+	CURLOPT_FOLLOWLOCATION => true,
+	CURLOPT_ENCODING => "",
+	CURLOPT_MAXREDIRS => 10,
+	CURLOPT_TIMEOUT => 50,
+	CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+	CURLOPT_CUSTOMREQUEST => "GET",
+	CURLOPT_HTTPHEADER => [
+        "accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+        "accept-language: en-IN,en-GB;q=0.9,en-US;q=0.8,en;q=0.7",
+        "cookie: __cfduid=d922bc7ae073ccd597580a4cfc5e562571614140229",
+        "referer: https://www.blockchain.com/",
+        "sec-fetch-dest: document",
+        "sec-fetch-mode: navigate",
+        "sec-fetch-site: cross-site",
+        "sec-fetch-user: ?1",
+        "upgrade-insecure-requests: 1",
+        "user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36"
+  ],
+]);
+$valueinbtc = curl_exec($curl);
+curl_close($curl);
+$outvalue = json_decode($valueinbtc, true);
+
+send_MDmessage($chat_id,$message_id, "***USD = $inbtc \nBTC = $outvalue \nValue checked by @$username ***");
+}
+
+/// Bitcoin Rate
+if(strpos($message, "/btcrate") === 0){
+   $curl = curl_init();
+   curl_setopt_array($curl, [
+CURLOPT_URL => "https://blockchain.info/ticker",
+	CURLOPT_RETURNTRANSFER => true,
+	CURLOPT_FOLLOWLOCATION => true,
+	CURLOPT_ENCODING => "",
+	CURLOPT_MAXREDIRS => 10,
+	CURLOPT_TIMEOUT => 50,
+	CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+	CURLOPT_CUSTOMREQUEST => "GET",
+	CURLOPT_HTTPHEADER => [
+        "accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+        "accept-encoding: gzip, deflate, br",
+        "accept-language: en-IN,en-GB;q=0.9,en-US;q=0.8,en;q=0.7",
+        "cache-control: max-age=0",
+        "cookie: __cfduid=d922bc7ae073ccd597580a4cfc5e562571614140229",
+        "referer: https://www.blockchain.com/",
+        "sec-fetch-dest: document",
+        "sec-fetch-mode: navigate",
+        "sec-fetch-site: cross-site",
+        "sec-fetch-user: ?1",
+        "upgrade-insecure-requests: 1",
+"user-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36"
+  ],
+]);
+$btcvalue = curl_exec($curl);
+curl_close($curl);
+$currentvalue = json_decode($btcvalue, true);
+
+$valueinUSD = $currentvalue["USD"]["15m"];
+$valueinINR = $currentvalue["INR"]["15m"];
+
+send_MDmessage($chat_id,$message_id, "***1 BTC \nUSD = $valueinUSD $ \nINR = $valueinINR ₹ \nRate checked by @$username ***");
+}
+
+
+/// Etherum Rate
+if(strpos($message, "/ethrate") === 0){
+   $curl = curl_init();
+   $ethToken = ""; /// Get Api key from etherscan.io
+   curl_setopt_array($curl, [
+CURLOPT_URL => "https://api.etherscan.io/api?module=stats&action=ethprice&apikey=$ethToken",
+
+	CURLOPT_RETURNTRANSFER => true,
+	CURLOPT_FOLLOWLOCATION => true,
+	CURLOPT_ENCODING => "",
+	CURLOPT_MAXREDIRS => 10,
+	CURLOPT_TIMEOUT => 50,
+	CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+	CURLOPT_CUSTOMREQUEST => "GET",
+	CURLOPT_HTTPHEADER => [
+        "accept-encoding: gzip, deflate, br",
+"accept-language: en-IN,en-GB;q=0.9,en-US;q=0.8,en;q=0.7",
+"cache-control: max-age=0",
+"cookie: __cfduid=d842bd50be4d4c3d6eef45691148f3fb81614487925; _ga=GA1.2.533709807.1614487927; _gid=GA1.2.138466737.1614487927",
+"sec-fetch-dest: document",
+"sec-fetch-mode: navigate",
+"sec-fetch-site: none",
+"sec-fetch-user: ?1",
+"upgrade-insecure-requests: 1",
+"user-agent: Mozilla/5.0 (Linux; Android 6.0; Nexus 5 Build/MRA58N) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.190 Mobile Safari/537.36"
+  ],
+]);
+$ethValue = curl_exec($curl);
+curl_close($curl);
+$ethCurrentValue = json_decode($ethValue, true);
+
+$ethValueInUSD = $ethCurrentValue["result"]["ethusd"];
+
+send_MDmessage($chat_id,$message_id, "***1 ETH \nUSD = $ethValueInUSD $ \nRate checked by @$username ***");
+}
 
 //Youtube Search
 if (strpos($message, "/syt") === 0) {
